@@ -1,0 +1,57 @@
+' ==========================================================
+' Procedure :   DeleteColumnByCriterias
+' Programmer:   Alejandro Martinez
+' Date      :   12/04/2015
+' Purpose   :   This will delete all columns as per the Array
+'               of String being passed
+' Param IN  :   rTopLeftRange: Top left range of the columns
+'               to Delete or the complete Range.
+'               arrCriterias: One or more String of Criterias
+'               that will be determine what columns will be
+'               deleted.
+'               bExpandToLastColumn: Will determine if the
+'               range being passed will be expanded until
+'               the last column of the rows.
+' ==========================================================
+Sub DeleteColumnByCriterias(ByRef rTopLeftRange As Range, _
+                            ByRef arrCrtiterias As Variant, _
+                            Optional ByVal bExpandRangeToLastColumn As Boolean = False)
+
+    Dim rData As Range
+    Dim rDelete As Range
+    Dim r As Range
+    Dim lLastUsedCol As Long
+    Dim lWidth As Long
+    Dim i As Long
+
+    ' If bExpandToLastColumn is true, it will expanded to the last column from the top
+    ' left of the Range being passed and set it as the Range to Work.
+    If bExpandRangeToLastColumn Then
+        With rTopLeftRange.Parent
+            lLastUsedCol = .Cells(rTopLeftRange.Row, .Columns.Count).End(xlToLeft).Column
+            Set rData = rTopLeftRange.Resize(, lLastUsedCol - rTopLeftRange.Column + 1)
+        End With
+    Else
+        Set rData = rTopLeftRange
+    End If
+
+    ' Will loop through all the String in the Array passed.
+    ' Set rDelete to columns where it finds one of the Criterias.
+    For i = LBound(arrCrtiterias) To UBound(arrCrtiterias)
+        For Each r In rData
+            If r.Value = arrCrtiterias(i) Then
+                ' Add to Range a new found column with Criteria.
+                If Not rDelete Is Nothing Then
+                    Set rDelete = Union(rDelete, r.EntireColumn)
+                Else
+                    ' If it's first time it finds the Criteria.
+                    Set rDelete = r.EntireColumn
+                End If
+            End If
+        Next r
+    Next i
+
+    ' Delete the Range where Criterias met.
+    rDelete.Delete
+
+End Sub
